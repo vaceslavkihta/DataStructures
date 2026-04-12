@@ -21,15 +21,9 @@
     <ClCompile Include="RBT.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="rbtImpl.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RBT.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
-    <ClInclude Include="rbtImpl.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,33 +7,57 @@ using std::cout, std::endl, std::cerr;
 using std::unique_ptr, std::make_unique;
 using std::initializer_list;
 
-/* 
-==================================================
-
-
-
-==================================================
-*/
-
 namespace DataStructures {
+	enum Colours { black, red };
+
+	template <typename KeyT>
+	struct Node;
+
 	template <typename KeyT>
 	class rbt {
 		Node<KeyT>* root = nullptr;
-		std::size_t size = 0;
+		std::size_t sz = 0;
 		
 	public:
-		rbt();
+		struct iterator;
+
 		rbt(KeyT);
 		rbt(initializer_list<KeyT>);
-		rbt(const rbt<KeyT>&);
-		rbt(rbt<KeyT>&&);
+		rbt(const rbt&);
+		rbt(rbt&&);
 
-		rbt& operator=(const rbt<KeyT>&);
-		rbt& operator=(rbt<KeyT>&&);
+		rbt& operator=(const rbt&);
+		rbt& operator=(rbt&&);
 
 		~rbt();
-		
 
+		size_t size() const;
+		bool empty() const;
+
+		void insert(const KeyT&);
+		void erase(const KeyT&);
+		iterator find(const KeyT&);
+
+		iterator begin();
+		iterator end();
+
+		struct iterator {
+			Node<KeyT>* node;
+
+			iterator();
+			iterator(Node<KeyT>*);
+			iterator(const iterator&);
+			
+			using difference_type = std::ptrdiff_t;
+			using value_type = Node<KeyT>;
+			using pointer = Node<KeyT>*;
+			using reference = Node<KeyT>&;
+			using iterator_category = std::bidirectional_iterator_tag;
+
+			void operator++();
+			void operator--();
+			void operator*();
+		};
 	};	
 
 	template <typename KeyT>
@@ -49,8 +73,7 @@ namespace DataStructures {
 	void rightRotateBig(Node<KeyT>*);
 
 	template<typename KeyT>
-	void balancing(Node<KeyT>*);
+	void balancing(Node<KeyT>*);	
 
-	template<typename KeyT>
-	void find(const KeyT&);
+
 }
