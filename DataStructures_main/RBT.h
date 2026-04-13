@@ -47,6 +47,9 @@ namespace DataStructures {
 			iterator();
 			iterator(Node<KeyT>*);
 			iterator(const iterator&);
+
+			void increment(); /* must be private/protected
+			void decrement();    must be private/protected */
 			
 			using difference_type = std::ptrdiff_t;
 			using value_type = Node<KeyT>;
