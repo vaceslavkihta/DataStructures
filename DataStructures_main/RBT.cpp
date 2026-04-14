@@ -1,15 +1,5 @@
 #include "RBT.h"
 
-template <typename KeyT>
-using rbt = DataStructures::rbt<KeyT>;
-
-template <typename KeyT>
-using iterator = DataStructures::rbt<KeyT>::iterator;
-
-template <typename KeyT>
-rbt<KeyT>::rbt(KeyT root) : root(root) { ; }
-
-
 template<typename KeyT>
 void DataStructures::rbt<KeyT>::iterator::increment() {
 	if (node->right != nullptr) {
@@ -18,13 +8,27 @@ void DataStructures::rbt<KeyT>::iterator::increment() {
 	}
 	else {
 		Node<KeyT>* tmpParent = node->parent;
-		while (node == node->right) {
+		while (node == tmpParent->right) {
 			node = tmpParent;
 			tmpParent = tmpParent->parent;
 		}
 		if (node->right != tmpParent) { node = tmpParent; }
 	}
 }
+
+template <typename KeyT>
+void DataStructures::rbt<KeyT>::iterator::decrement() {
+	Node<KeyT>* tmpParent = node->parent;
+	if (node->left == nullptr) {
+		while (node == tmpParent->left) { 
+			node = tmpParent; 
+			tmpParent = node->parent; 
+		}
+		node = tmpParent->right;
+	}
+	else { node = node->left; }
+}
+
 
 
 

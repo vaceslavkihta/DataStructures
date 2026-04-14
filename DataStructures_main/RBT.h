@@ -11,7 +11,11 @@ namespace DataStructures {
 	enum Colours { black, red };
 
 	template <typename KeyT>
-	struct Node;
+	struct Node {
+		KeyT val;
+		Node* parent, * left, * right;
+		Colours colour;
+	};
 
 	template <typename KeyT>
 	class rbt {
@@ -42,24 +46,34 @@ namespace DataStructures {
 		iterator end();
 
 		struct iterator {
-			Node<KeyT>* node;
-
-			iterator();
-			iterator(Node<KeyT>*);
-			iterator(const iterator&);
-
-			void increment(); /* must be private/protected
-			void decrement();    must be private/protected */
-			
 			using difference_type = std::ptrdiff_t;
-			using value_type = Node<KeyT>;
-			using pointer = Node<KeyT>*;
-			using reference = Node<KeyT>&;
+			using value_type = KeyT;
+			using pointer = KeyT*;
+			using reference = KeyT&;
 			using iterator_category = std::bidirectional_iterator_tag;
 
-			void operator++();
-			void operator--();
-			void operator*();
+			Node<KeyT>* node;
+
+			iterator() : node(nullptr) { ; }
+			iterator(Node<KeyT>* src) : node(src) { ; }
+			iterator(const iterator& rhs) : node(rhs.node) { ; }
+
+			void increment();
+			void decrement();
+			
+			iterator& operator++() { increment(); return *this; }
+			iterator& operator++(int) {
+				iterator tmp = *this;
+				increment();
+				return tmp;
+			}
+			iterator& operator--() { decrement(); return *this; }
+			iterator& operator--(int) {
+				iterator tmp = *this;
+				decrement();
+				return tmp;
+			}
+			reference operator*() { return node->value; }
 		};
 	};	
 
