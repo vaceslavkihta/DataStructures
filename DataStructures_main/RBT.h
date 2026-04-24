@@ -78,16 +78,16 @@ namespace DataStructures {
 	};	
 
 	template <typename KeyT>
-	void leftRotate(Node<KeyT>*);
+	void LR(Node<KeyT>*);
 
 	template <typename KeyT>
-	void rightRotate(Node<KeyT>*);
+	void RR(Node<KeyT>*);
 
 	template <typename KeyT>
-	void leftRotateBig(Node<KeyT>*);
+	void LRB(Node<KeyT>*);
 
 	template <typename KeyT>
-	void rightRotateBig(Node<KeyT>*);
+	void RRB(Node<KeyT>*);
 
 	template<typename KeyT>
 	void balancing(Node<KeyT>*);	
