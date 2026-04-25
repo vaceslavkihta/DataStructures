@@ -78,8 +78,39 @@ void DataStructures::LRB(Node<KeyT>* node) {
 }
 
 template <typename KeyT>
-template <typename Compare>
-DS::rbt<KeyT>::iterator DS::rbt<KeyT>::find(const KeyT&, Compare compare) {
+DS::rbt<KeyT>::iterator DS::rbt<KeyT>::find(const KeyT& key) { // замерить с проверкой left/right перед переходом и без нее
 	Node<KeyT>* currNode = root;
-	while (compare() )
+	while (currNode->key != key) {
+		if (currNode->key > key) { currNode = currNode->left; }
+		else if (currNode->key < key) { currNode = currNode->right; }
+	}
+	return currNode == nullptr ? iterator(root) : iterator(currNode);
+}
+
+template <typename KeyT>
+DS::rbt<KeyT>::iterator DS::rbt<KeyT>::find_placement(const KeyT& key) {
+	Node<KeyT>* currNode = root;
+	while (currNode->left != nullptr || currNode->right != nullptr) { // Протестить с && [TODO]
+		if (currNode->key > key) { currNode = currNode->left; }
+		else if (currNode->key < key) { currNode = currNode->right; }
+	}
+	return currNode == nullptr ? iterator(root) : iterator(currNode);
+}
+
+template <typename KeyT>
+void DS::rbt<KeyT>::insert(const KeyT& key) {
+	Node<KeyT>* place = *find(key);
+	if (key > place->key) {	place->right = new Node{ key, place, nullptr, nullptr, red }; }
+	else if (key < place->key) { place->left = new Node{ key, place, nullptr, nullptr, red }; }
+
+	
+}
+
+template <typename KeyT>
+void DS::fixInsert(Node<KeyT>* node) {
+	Node<KeyT>* g = node->parent ? node->parent : nullptr, 
+		* u = g != nullptr ? g->right == node ? g->left : g->right : nullptr;
+	if (node->colour == red) {
+		if (u->colour == red) {}
+	}
 }

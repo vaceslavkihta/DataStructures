@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <initializer_list>
+#include <exception>
 
 using std::cout, std::endl, std::cerr;
 using std::unique_ptr, std::make_unique;
@@ -12,7 +13,7 @@ namespace DataStructures {
 
 	template <typename KeyT>
 	struct Node {
-		KeyT val;
+		KeyT key;
 		Node* parent, * left, * right;
 		Colours colour;
 	};
@@ -21,6 +22,9 @@ namespace DataStructures {
 	class rbt {
 		Node<KeyT>* root = nullptr;
 		std::size_t sz = 0;
+
+		struct iterator;
+		iterator find_placement(const KeyT&);
 		
 	public:
 		struct iterator;
@@ -40,6 +44,7 @@ namespace DataStructures {
 
 		void insert(const KeyT&);
 		void erase(const KeyT&);
+
 		iterator find(const KeyT&);
 
 		iterator begin();
@@ -88,6 +93,9 @@ namespace DataStructures {
 
 	template <typename KeyT>
 	void RRB(Node<KeyT>*);
+
+	template <typename KeyT>
+	void fixInsert(Node<KeyT>*);
 
 	template<typename KeyT>
 	void balancing(Node<KeyT>*);	
