@@ -100,5 +100,16 @@ namespace DataStructures {
 	template<typename KeyT>
 	void balancing(Node<KeyT>*);	
 
+	template <typename KeyT>
+	void revCol(Node<KeyT>* node) {
+		if (node->colour == black) node->colour = red;
+		else node->colour = black;
+	}
+
+	template<typename... Args>
+	void reverseColour(Args... args) {
+		(revCol(args), ...);
+	}
+
 
 }

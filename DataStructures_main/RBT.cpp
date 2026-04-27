@@ -99,18 +99,35 @@ DS::rbt<KeyT>::iterator DS::rbt<KeyT>::find_placement(const KeyT& key) {
 
 template <typename KeyT>
 void DS::rbt<KeyT>::insert(const KeyT& key) {
-	Node<KeyT>* place = *find(key);
-	if (key > place->key) {	place->right = new Node{ key, place, nullptr, nullptr, red }; }
-	else if (key < place->key) { place->left = new Node{ key, place, nullptr, nullptr, red }; }
-
-	
+	if (sz > 0) {
+		Node<KeyT>* place = *find_placement(key);
+		if (key > place->key) { place->right = new Node{ key, place, nullptr, nullptr, red }; }
+		else if (key < place->key) { place->left = new Node{ key, place, nullptr, nullptr, red }; }
+	}
+	else {
+		root = new Node{ key, nullptr, nullptr, nullptr, black };
+	}
+	++sz;	
 }
+
+
 
 template <typename KeyT>
 void DS::fixInsert(Node<KeyT>* node) {
+	bool isLeft = false;
 	Node<KeyT>* g = node->parent ? node->parent : nullptr, 
-		* u = g != nullptr ? g->right == node ? g->left : g->right : nullptr;
+		* u = g != nullptr ? g->right == node ? g->left, isLeft = true : g->right : nullptr;
+
 	if (node->colour == red) {
-		if (u->colour == red) {}
+		if (u != nullptr && u->colour == red) {
+			g->colour = red;
+			node->colour = black;
+			u->colour = black;
+			if (g->parent->colour == red) { fixInsert(g->parent); }// какую ноду передавать?
+		}
+		else if (u != nullptr && u->colour == black) {
+			if (isLeft && node->right->colour == red) { LRB(node); }
+			else if (!isLeft && node->left->colour == red) { RRB(node); }
+		}
 	}
 }
