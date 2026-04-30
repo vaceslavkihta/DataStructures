@@ -42,11 +42,11 @@ void DataStructures::LR(Node<KeyT>* node) {
 
 template <typename KeyT>
 void DataStructures::RR(Node<KeyT>* node) { 
-	Node<KeyT>* child = node->right;
-	child->parent = node->parent;
-	node->parent->right = child;
-	node->parent = child;
-	child->right = node;
+	Node<KeyT>* ch = node->left;
+	ch->parent = node->parent;
+	node->parent->right = ch;
+	node->parent = ch;
+	ch->right = node;
 }
 
 template <typename KeyT>
@@ -103,6 +103,7 @@ void DS::rbt<KeyT>::insert(const KeyT& key) {
 		Node<KeyT>* place = *find_placement(key);
 		if (key > place->key) { place->right = new Node{ key, place, nullptr, nullptr, red }; }
 		else if (key < place->key) { place->left = new Node{ key, place, nullptr, nullptr, red }; }
+		fixInsert(place);
 	}
 	else {
 		root = new Node{ key, nullptr, nullptr, nullptr, black };
@@ -110,24 +111,3 @@ void DS::rbt<KeyT>::insert(const KeyT& key) {
 	++sz;	
 }
 
-
-
-template <typename KeyT>
-void DS::fixInsert(Node<KeyT>* node) {
-	bool isLeft = false;
-	Node<KeyT>* g = node->parent ? node->parent : nullptr, 
-		* u = g != nullptr ? g->right == node ? g->left, isLeft = true : g->right : nullptr;
-
-	if (node->colour == red) {
-		if (u != nullptr && u->colour == red) {
-			g->colour = red;
-			node->colour = black;
-			u->colour = black;
-			if (g->parent->colour == red) { fixInsert(g->parent); }// какую ноду передавать?
-		}
-		else if (u != nullptr && u->colour == black) {
-			if (isLeft && node->right->colour == red) { LRB(node); }
-			else if (!isLeft && node->left->colour == red) { RRB(node); }
-		}
-	}
-}
