@@ -31,51 +31,7 @@ void DataStructures::rbt<KeyT>::iterator::decrement() {
 	else { node = node->left; }
 }
 
-template <typename KeyT>
-void DataStructures::LR(Node<KeyT>* node) {
-	Node<KeyT>* child = node->right;
-	child->parent = node->parent;
-	node->parent->left = child;
-	node->parent = child;
-	child->left = node;
-}
 
-template <typename KeyT>
-void DataStructures::RR(Node<KeyT>* node) { 
-	Node<KeyT>* ch = node->left;
-	ch->parent = node->parent;
-	node->parent->right = ch;
-	node->parent = ch;
-	ch->right = node;
-}
-
-template <typename KeyT>
-void DataStructures::RRB(Node<KeyT>* node) {
-	Node<KeyT>* child = node->right, 
-		* ggf = node->parent->parent != 0 ? node->parent->parent : nullptr;
-	node->right = node->parent;
-	if (ggf != nullptr){
-		node->parent = ggf;
-		node == ggf->left ? ggf->left = node : ggf->right = node;
-	}
-	node->right->parent = node;
-	node->right->left = child;
-	child->parent = node->right;
-}
-
-template <typename KeyT>
-void DataStructures::LRB(Node<KeyT>* node) {
-	Node<KeyT>* child = node->left,
-		* ggf = node->parent->parent != 0 ? node->parent->parent : nullptr;
-	node->left = node->parent;
-	if (ggf != nullptr) {
-		node->parent = ggf;
-		node == ggf->left ? ggf->left = node : ggf->right = node;
-	}
-	node->left->parent = node;
-	node->right->left = child;
-	child->parent = node->right;
-}
 
 template <typename KeyT>
 DS::rbt<KeyT>::iterator DS::rbt<KeyT>::find(const KeyT& key) { // замерить с проверкой left/right перед переходом и без нее
@@ -90,9 +46,9 @@ DS::rbt<KeyT>::iterator DS::rbt<KeyT>::find(const KeyT& key) { // замерить с про
 template <typename KeyT>
 DS::rbt<KeyT>::iterator DS::rbt<KeyT>::find_placement(const KeyT& key) {
 	Node<KeyT>* currNode = root;
-	while (currNode->left != nullptr || currNode->right != nullptr) { // ѕротестить с && [TODO]
-		if (currNode->key > key) { currNode = currNode->left; }
-		else if (currNode->key < key) { currNode = currNode->right; }
+	while (currNode != nullptr) { // ѕротестить с && [TODO]
+		if (currNode->key > key && currNode->right != nullptr) { currNode = currNode->left; }
+		else if (currNode->key < key && currNode->left != nullptr) { currNode = currNode->right; }
 	}
 	return currNode == nullptr ? iterator(root) : iterator(currNode);
 }

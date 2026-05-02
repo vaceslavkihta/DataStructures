@@ -25,7 +25,36 @@ namespace DataStructures {
 
 		struct iterator;
 		iterator find_placement(const KeyT&);
-		
+
+		void fixInsert(Node<KeyT>* node) {
+			bool isLeft = false;
+			Node<KeyT>* g = node->parent ? node->parent : nullptr, * u;
+
+			if (iAmRight(node, g)) { u = g->left; }
+			else { u = g->right; isLeft = true; }
+
+			if (isRed(node)) {
+				if (isNode(u) && isRed(u)) {
+					if (g != root) { reverseColour(g, node, u); }
+					else { reverseColour(node, u); }
+	
+					if (isNode(g->parent) && isRed(g->parent)) { fixInsert(g->parent); }// какую ноду передавать?
+				}
+				else if (isNode(u) && isBlack(u)) {
+					Node<KeyT>* ch = (node->left && node->left->colour == red) ? node->left : node->right;
+
+					if (isLeft) {
+						if (iAmLeft(ch, node)) { RRB(node); reverseColour(node, g); }
+						else { LR(node); RRB(g->left); reverseColour(ch, g); } // попробовать else{ LR(...); fixInsert(node); } т.к. дублирование кода
+					}
+					else {
+						if (iAmRight(ch, node)) { LRB(node); reverseColour(node, g); }
+						else { RR(node); LRB(g->right); reverseColour(ch, g); }
+					}	
+				}
+			}
+		}
+
 	public:
 		struct iterator;
 
@@ -65,7 +94,7 @@ namespace DataStructures {
 
 			void increment();
 			void decrement();
-			
+
 			iterator& operator++() { increment(); return *this; }
 			iterator& operator++(int) {
 				iterator tmp = *this;
@@ -78,106 +107,122 @@ namespace DataStructures {
 				decrement();
 				return tmp;
 			}
-			reference operator*() { return node->value; }
+			reference operator*() { return node->key; }
 		};
-	};	
+	};
 
 	template <typename KeyT>
-	void LR(Node<KeyT>*);
-
-	template <typename KeyT>
-	void RR(Node<KeyT>*);
-
-	template <typename KeyT>
-	void LRB(Node<KeyT>*);
-
-	template <typename KeyT>
-	void RRB(Node<KeyT>*);
-
-	template <typename KeyT>
-	void fixInsert(Node<KeyT>* node) {
-		bool isLeft = false;
-		Node<KeyT>* g = node->parent ? node->parent : nullptr,
-			* u = g != nullptr ? g->right == node ? g->left, isLeft = true : g->right : nullptr;
-
-		if (node->colour == red) {
-			if (u != nullptr && u->colour == red) {
-				g->colour = red;
-				node->colour = black;
-				u->colour = black;
-				if (g->parent->colour == red) { fixInsert(g->parent); }// какую ноду передавать?
-			}
-			else if (u != nullptr && u->colour == black) {
-				if (isLeft && node->left->colour == red) {
-					LR(node), RRB(node->parent);
-				}
-				else if (!isLeft && node->right->colour) {
-					RR(node), LRB(node->parent);
-				}
-
-				if (isLeft && node->right->colour == red) { LRB(node); reverseColour(g, node->right); }
-				else if (!isLeft && node->left->colour == red) { RRB(node); reverseColour(g, node->left); }
-			}
+	void LR(Node<KeyT>* node) {
+		Node<KeyT>* x = node->right, * ch = node->left;
+		x->parent = node->parent;
+		node->parent->left = x;
+		if (isNode(ch)){
+			node->parent = ch;
+			ch->left = node;
+		}
+		else {
+			node->parent = x;
+			x->left = node;
 		}
 	}
 
 	template <typename KeyT>
-	void fixErase(Node<KeyT>* node) {
+	void RR(Node<KeyT>* node) {
+		Node<KeyT>* x = node->left, *ch = node->right;
+		x->parent = node->parent;
+		node->parent->right = x;
+		if (isNode(ch)) {
+			node->parent = ch;
+			ch->right = node;
+		}
+		else {
+			node->parent = x;
+			x->right = node;
+		}		
+	}
+
+	template <typename KeyT>
+	void RRB(Node<KeyT>* node) {
+		Node<KeyT>* child = node->right,
+			* ggf = node->parent->parent != 0 ? node->parent->parent : nullptr;
+		node->right = node->parent;
+		if (ggf != nullptr) {
+			node->parent = ggf;
+			node == ggf->left ? ggf->left = node : ggf->right = node;
+		}
+		node->right->parent = node;
+		node->right->left = child;
+		child->parent = node->right;
+	}
+
+	template <typename KeyT>
+	void LRB(Node<KeyT>* node) {
+		Node<KeyT>* child = node->left,
+			* ggf = node->parent->parent != 0 ? node->parent->parent : nullptr;
+		node->left = node->parent;
+		if (ggf != nullptr) {
+			node->parent = ggf;
+			node == ggf->left ? ggf->left = node : ggf->right = node;
+		}
+		node->left->parent = node;
+		node->right->left = child;
+		child->parent = node->right;
+	}	
+
+	template <typename KeyT>
+	void erase(Node<KeyT>* node) {
 		Node<KeyT>* p = node->parent;
 
 		if (node->colour == red && node->right == nullptr && node->left == nullptr) { delete node; return; } // V1
 		else if (node->colour == black) { // V2
-			Node<KeyT>* ch = node == p->left ? p->right : p->left; // [Дублирующая проверка]
+			bool isLeft = false;  // true: deletion node is p->right
+			Node<KeyT>* ch;        // [Дублирующая проверка]
 
-			if (p->colour == red) { // V2.1
-				if (isChild(ch)) {
-					if (iAmRight(ch, p) && isLeftCh(ch)) { RR(ch); LRB(p->right); } // Дублирующия проверка
-					else if (iAmLeft(ch, p) && isRightCh(ch)) { LR(ch); RRB(p->left); } // возможно условие избыточно
+			if (node == p->right) { ch = p->right; isLeft = 1; }
+			else { ch = p->left; }
+
+			if (isRed(p)) { // V2.1
+				if (isNode(ch)) {
+					if (!isLeft && isLeftCh(ch)) { RR(ch); LRB(p->right); } // Дублирующия проверка
+					else if (isLeft && isRightCh(ch)) { LR(ch); RRB(p->left); } // возможно условие избыточно
 				}
 				else { reverseColour(p, ch); }
 				delete node;
-			}	
-
+			}
 			else { // V2.2 
-				if (isChild(ch) && isRed(ch)) {  // возможно условие избыточно
-					if (iAmRight(ch, p) && isChild(ch->left->right)) {
-						if (isRed(ch->left->right)) {
+				if (isNode(ch) && isRed(ch)) {  // возможно условие избыточно
+					Node<KeyT>* d = isLeft ? ch->right->left : ch->left->right;
 
-						}
-						else {
-							RRB(ch); reverseColour(ch, ch->right); // ch->right проверить
-						}
-					}
-
-
-					if (ch->left != nullptr && ch->left->colour == black) {
-						if (ch->left->right != nullptr && ch->left->right->colour == red){
-							// Малый (ch) + большой (p->right); d -> black
-						}
-						else {
-							// Большой (ch), C -> красный, B -> черный
-						}
-					}
-				}
-				else if (ch != nullptr && ch->colour == black) {
-					if (ch->left != nullptr) {
-
+					if (isNode(d) && isRed(d)) { // isRed возможно избыточно
+						if (isLeft) { LR(ch); RRB(p); }
+						else { RR(ch); LRB(p); }
 					}
 					else {
-
+						if (isLeft) { RRB(ch); }
+						else { LRB(ch); }
+						reverseColour(d);
 					}
+				}
+				else if (isNode(ch) && isBlack(ch)) {
+					Node<KeyT>* c = isLeft ? ch->right : ch->left;
+					if (isNode(c)) {
+						if (isLeft) { RR(ch); LRB(c); }
+						else { LR(ch); RRB(c); }
+						reverseColour(c);
+					}
+					else { reverseColour(ch); }
 				}
 			}
 		}
 	}
 
 	template<typename KeyT>
-	void balancing(Node<KeyT>*);	
+	void balancing(Node<KeyT>*);
 
 	template <typename KeyT>
 	void revCol(Node<KeyT>* node) {
-		if (node->colour == black) node->colour = red;
-		else node->colour = black;
+		if (node->colour == black) { node->colour = red; }
+		else { node->colour = black; }
 	}
 
 	template<typename... Args>
@@ -186,7 +231,7 @@ namespace DataStructures {
 	}
 
 	template <typename KeyT>
-	bool isChild(Node<KeyT>* node) { return node != nullptr ? true : false; }
+	bool isNode(Node<KeyT>* node) { return node != nullptr ? true : false; }
 
 	template <typename KeyT>
 	bool isLeftCh(Node<KeyT>* node) { return node->left != nullptr ? true : false; }
