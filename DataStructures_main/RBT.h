@@ -72,18 +72,28 @@ namespace DataStructures {
 		void fixErase(Node<KeyT>* node) {
 			Node<KeyT>* p = node->parent;
 
-			if (node->colour == red && node->right == nullptr && node->left == nullptr) { delete node; return; } // V1
-			else if (node->colour == black) { // V2
+			if (isRed(node) && !allOfChlds(node)) { delete node; return; } // V1
+			else if (isBlack(node)) { // V2
 				bool isLeft = false;  // true: deletion node is p->right
-				Node<KeyT>* ch;        // [Дублирующая проверка]
+				Node<KeyT>* ch;
 
-				if (node == p->right) { ch = p->right; isLeft = 1; }
-				else { ch = p->left; }
+				if (iAmRight(node, p)) { ch = p->left; isLeft = 1; }
+				else { ch = p->right; }
+
+				 // Сделать если у удаляемой ноды есть дети
 
 				if (isRed(p)) { // V2.1
-					if (isNode(ch)) {
-						if (!isLeft && isLeftCh(ch)) { RR(ch); LRB(p->right); } // Дублирующия проверка
-						else if (isLeft && isRightCh(ch)) { LR(ch); RRB(p->left); } // возможно условие избыточно
+					if (anyOfChlds(ch)) {
+						if (!isLeft) {
+							if (isLeftCh(ch)) { RR(ch); LRB(p->right); reverseColour(ch); }
+							else if (isRightCh(ch)) { LRB(ch); }
+						}
+						else if (isLeft && isRightCh(ch)) { 
+							if (isRightCh(ch)){ LR(ch); RRB(p->left); reverseColour(ch); }
+							else { RRB(ch); }
+						} 
+						if (isRed(p->parent)){ reverseColour(p, ch); }
+						else{ reverseColour(p, p->parent, ch); }
 					}
 					else { reverseColour(p, ch); }
 					delete node;
@@ -95,11 +105,35 @@ namespace DataStructures {
 						if (isNode(d) && isRed(d)) { // isRed возможно избыточно
 							if (isLeft) { LR(ch); RRB(p); }
 							else { RR(ch); LRB(p); }
+							reverseColour(d);
 						}
 						else {
-							if (isLeft) { RRB(ch); }
-							else { LRB(ch); }
-							reverseColour(d);
+							if (isLeft) {
+								if (isRightCh(ch)) {
+									LR(ch); RRB(p->left);
+									if (isLeftCh(ch)) { reverseColour(ch, ch->left); }
+									else { reverseColour(ch); }
+									if (root == p) { root = ch->parent; }
+								}
+								else if (isLeftCh(ch)) {
+									RRB(ch); reverseColour(ch); 
+									if (root == p) {root = ch; ; }
+								}
+								else { reverseColour(p, ch); }
+							}
+							else{
+								if (isLeftCh(ch)) {
+									RR(ch); LRB(p->left);
+									if (isRightCh(ch)) { reverseColour(ch, ch->right); }
+									else { reverseColour(ch); }
+									if (root == p) { root = ch->parent; }
+								}
+								else if (isRightCh(ch)) { 
+									LRB(ch); reverseColour(ch); 
+									if (root == p) { root = ch; }
+								}
+								else{ reverseColour(p, ch); }
+							}
 						}
 						delete node;
 					}
@@ -371,10 +405,16 @@ namespace DataStructures {
 	bool isNode(Node<KeyT>* node) { return node != nullptr ? true : false; }
 
 	template <typename KeyT>
-	bool isLeftCh(Node<KeyT>* node) { return node->left != nullptr ? true : false; }
+	bool isLeftCh(Node<KeyT>* node) { return isNode(node->left) ? true : false; }
 
 	template <typename KeyT>
-	bool isRightCh(Node<KeyT>* node) { return node->right != nullptr ? true : false; }
+	bool isRightCh(Node<KeyT>* node) { return isNode(node->right) ? true : false; }
+
+	template <typename KeyT>
+	bool anyOfChlds(Node<KeyT>* node) { return isNode(node->right) || isNode(node->left); }
+
+	template <typename KeyT>
+	bool allOfChlds(Node<KeyT>* node) { return isNode(node->right) && isNode(node->left); }
 
 	template <typename KeyT>
 	bool iAmRight(Node<KeyT>* node, Node<KeyT>* parent) { return parent->right == node ? true : false; }
